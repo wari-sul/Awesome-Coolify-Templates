@@ -1,33 +1,74 @@
-# LobeChat DB Coolify Template
+# LobeChat Database (Decoupled Deployment)
 
-## Environment Variables Configuration
+## Overview
 
-The following environment variables must be set in the Coolify UI:
+This Docker Compose deploys **LobeChat Database** with **pgvector** in a single stack, while using **separate/decoupled** Logto (auth) and MinIO (S3) stacks. All services communicate via Coolify proxy/magic URLs.
 
-### Database Connection Strings
+## Architecture
 
-#### DB_URL_LOGTO
 ```
-postgres://<SERVICE_USER_POSTGRES>:<SERVICE_PASSWORD_POSTGRES>@postgres:5432/logto
-```
-
-#### DATABASE_URL_LOBECHAT
-```
-postgres://<SERVICE_USER_POSTGRES>:<SERVICE_PASSWORD_POSTGRES>@postgres:5432/lobechat
+Stack A: Logto (+ own Postgres)    → https://logto.example.com
+Stack B: MinIO S3                 → https://s3.example.com  
+Stack C+D: pgvector + LobeChat    → https://chat.example.com
 ```
 
-### Service Endpoints
+## Deployment Steps
 
-- **LOGTO_ENDPOINT** - Set as actual HTTPS URL (no trailing slash)
-- **LOGTO_ADMIN_ENDPOINT** - Set as actual HTTPS URL (no trailing slash)
-- **LOBECHAT_PUBLIC_URL** - Set as actual HTTPS URL (no trailing slash)
+### 1. Prerequisites (already deployed)
+- **Stack A**: Logto Console → Applications → Create OIDC app → copy `client_id`/`client_secret`
+- **Stack B**: MinIO → create bucket (e.g. `lobe`) → create access key → note public domain
 
-### API Keys
+### 2. Deploy this compose (Stack C+D)
+1. Coolify → New → Docker Compose → paste YAML
+2. **Environment Variables** (all required):
+```
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=strongpassword123
 
-- **OPENAI_API_KEY** - Your OpenAI API key
+LOBECHAT_PUBLIC_URL=https://chat.example.com
+OPENAI_API_KEY=sk-...
 
-## Important Notes
+S3_ENDPOINT=https://s3.example.com
+S3_BUCKET=lobe
+S3_PUBLIC_DOMAIN=https://s3.example.com
+S3_ACCESS_KEY_ID=your-minio-key
+S3_SECRET_ACCESS_KEY=your-minio-secret
 
-- All endpoint URLs must use HTTPS
-- Do not include trailing slashes on URLs
-- Replace `<SERVICE_USER_POSTGRES>` and `<SERVICE_PASSWORD_POSTGRES>` with your actual PostgreSQL credentials
+AUTH_LOGTO_ISSUER=https://logto.example.com/oidc
+AUTH_LOGTO_ID=<from Logto app>
+AUTH_LOGTO_SECRET=<from Logto app>
+
+KEY_VAULTS_SECRET=$(openssl rand -base64 32)
+NEXT_AUTH_SECRET=$(openssl rand -base64 32)
+```
+3. **Lobechat service → Domains**: `https://chat.example.com:3210`
+4. Deploy
+
+## Coolify Magic Vars Used
+
+- `POSTGRES_*` → shared between pgvector + LobeChat DB URL
+- `${LOBECHAT_PUBLIC_URL}/api/auth` → auto-generates correct NextAuth callback
+
+## Logto Configuration (in Logto Console)
+
+For the LobeChat OIDC app:
+```
+Redirect URIs: https://chat.example.com/api/auth/callback/logto
+Post sign-out: https://chat.example.com
+```
+
+## Troubleshooting
+
+| Issue | Fix |
+|-------|-----|
+| `ENOTFOUND pgvector` | pgvector + LobeChat must be **same compose** |
+| `no available server` | Lobechat service Domains = `https://chat.example.com:3210` |
+| `/api/auth/error "Bad request"` | `NEXTAUTH_URL=${LOBECHAT_PUBLIC_URL}/api/auth` (note the `/`) |
+
+## Scaling Notes
+
+- **pgvector**: Single instance (add replicas if needed)
+- **MinIO**: Scale horizontally if >1TB storage
+- **Logto**: Already decoupled, scales independently
+
+**Success**: LobeChat loads → Logto login → dashboard works → AI chat functional.
