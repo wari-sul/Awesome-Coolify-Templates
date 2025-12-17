@@ -1,0 +1,68 @@
+services:
+  pgvector:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-lobechat}
+      - POSTGRES_USER=${POSTGRES_USER:?}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?}
+    volumes:
+      - pgvector-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB:-lobechat}"]
+      interval: 5s
+      timeout: 20s
+      retries: 10
+
+  lobechat:
+    image: lobehub/lobe-chat-database:latest
+    restart: unless-stopped
+    depends_on:
+      pgvector:
+        condition: service_healthy
+    environment:
+      # Public URL
+      - LOBECHAT_PUBLIC_URL=${LOBECHAT_PUBLIC_URL:?}
+      - APP_URL=${LOBECHAT_PUBLIC_URL}
+      - NEXTAUTH_URL=${LOBECHAT_PUBLIC_URL}/api/auth 
+
+      # Database 
+      - DATABASE_DRIVER=node
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pgvector:5432/lobechat
+
+      # Secrets
+      - KEY_VAULTS_SECRET=${KEY_VAULTS_SECRET:?}
+      - NEXT_AUTH_SECRET=${NEXT_AUTH_SECRET:?}
+
+      # S3 (MinIO)
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID:?}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY:?}
+      - S3_ENDPOINT=${S3_ENDPOINT:?}
+      - S3_BUCKET=${S3_BUCKET:?}
+      - S3_ENABLE_PATH_STYLE=1
+      - S3_PUBLIC_DOMAIN=${S3_PUBLIC_DOMAIN:?}
+
+      # Logto SSO 
+      - NEXT_AUTH_SSO_PROVIDERS=logto
+      - AUTH_LOGTO_ISSUER=${AUTH_LOGTO_ISSUER:?}
+      - AUTH_LOGTO_ID=${AUTH_LOGTO_ID:?}
+      - AUTH_LOGTO_SECRET=${AUTH_LOGTO_SECRET:?}
+
+      # OpenAI
+      - OPENAI_API_KEY=${OPENAI_API_KEY:?}
+
+      # Misc
+      - NEXT_PUBLIC_SERVICE_MODE=server
+      - LLM_VISION_IMAGE_USE_BASE64=1
+      - NODE_OPTIONS=--max-old-space-size=4096
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - 'wget -qO- http://localhost:3210/ || exit 1'
+      interval: 5s
+      timeout: 20s
+      retries: 10
+
+volumes:
+  pgvector-data:
