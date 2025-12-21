@@ -29,10 +29,12 @@ Single Container (aria2-ui):
 
 After deployment, access the services at:
 
-- **Aria2 + AriaNg UI**: `http://yourip:8000` or your configured domain
-- **File Server (Read Only)**: `http://yourip:8000/ro`
-- **File Manager**: `http://yourip:8000/files`
-- **Rclone Web UI**: `http://yourip:8000/rclone`
+- **Aria2 + AriaNg UI**: `https://your-domain.com` (or your configured domain)
+- **File Server (Read Only)**: `https://your-domain.com/ro`
+- **File Manager**: `https://your-domain.com/files`
+- **Rclone Web UI**: `https://your-domain.com/rclone`
+
+> **Note**: When deployed on Coolify with a domain configured, all services are automatically served over HTTPS. For local testing without a domain, services will be available over HTTP on the port you configure.
 
 ## Deployment Steps
 
@@ -73,8 +75,8 @@ ENABLE_APP_CHECKER=false            # Enable application health checker
 # Logging
 CADDY_LOG_LEVEL=WARN               # Caddy log level (DEBUG, INFO, WARN, ERROR)
 
-# Domain configuration (Coolify handles this)
-DOMAIN=:80                          # Internal port binding
+# Domain configuration (Coolify handles this automatically)
+DOMAIN=:80                          # Internal port binding (defaults to :80)
 ARIA2_EXTERNAL_PORT=443             # External access port
 ARIA2_SSL=false                     # SSL handled by Coolify proxy
 ```
