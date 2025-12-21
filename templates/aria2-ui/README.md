@@ -84,7 +84,7 @@ ARIA2_SSL=false                     # SSL handled by Coolify proxy
 ### 3. Configure Domain in Coolify
 
 1. In the Coolify service settings, go to **Domains**
-2. Add your domain: `https://aria2.example.com`
+2. Add your domain: `aria2.example.com` (without https:// prefix)
 3. Coolify will automatically handle SSL/TLS certificates
 
 ### 4. Deploy

@@ -33,7 +33,7 @@ services:
       # Downloads directory
       - aria2_data:/data
 
-      # Rclone + aria2 DHT cache  
+      # Rclone + aria2 DHT cache
       - aria2_cache:/app/.cache
 
       # Config directory (includes aria2.conf and aria2.session)
