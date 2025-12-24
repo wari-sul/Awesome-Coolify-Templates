@@ -1,0 +1,49 @@
+services:
+  coder:
+    image: ${CODER_REPO:-ghcr.io/coder/coder}:${CODER_VERSION:-latest}
+    environment:
+      # Generates and attaches a public URL in Coolify and proxies it to port 7080.
+      - SERVICE_URL_CODER_7080
+
+      # Coder networking
+      - CODER_HTTP_ADDRESS=0.0.0.0:7080
+      # Use the Coolify-generated public URL as the external access URL.
+      - CODER_ACCESS_URL=$SERVICE_URL_CODER_7080
+
+      # Database settings (shared with the database service)
+      - POSTGRES_USER=coder
+      - POSTGRES_DB=coder
+      - POSTGRES_PASSWORD=$SERVICE_PASSWORD_POSTGRES
+      - CODER_PG_CONNECTION_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}?sslmode=disable
+
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - coder_home:/home/coder
+
+    depends_on:
+      database:
+        condition: service_healthy
+
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:7080/"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  database:
+    image: postgres:17
+    environment:
+      - POSTGRES_USER=coder
+      - POSTGRES_DB=coder
+      - POSTGRES_PASSWORD=$SERVICE_PASSWORD_POSTGRES
+    volumes:
+      - coder_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coder -d coder"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  coder_data:
+  coder_home:

@@ -34,6 +34,25 @@ Complete download manager with Aria2, AriaNg, File Browser, and Rclone integrati
 
 </td>
 </tr>
+<tr>
+<td width="50%">
+
+### 💻 [Coder](./templates/coder/)
+
+Self-hosted cloud development environments with Docker workspace provisioning.
+
+**Stack:** Coder + PostgreSQL  
+**Complexity:** 🟡 Intermediate
+
+[📖 View Guide](./templates/coder/README.md) • [📦 Compose File](./templates/coder/docker-compose.yaml)
+
+</td>
+<td width="50%">
+
+<!-- Placeholder for future template -->
+
+</td>
+</tr>
 </table>
 
 ## 🎯 Why This Repository?
