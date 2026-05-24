@@ -10,9 +10,11 @@ Browse our collection of production-ready templates:
 <tr>
 <td width="50%">
 
-### 🗨️ [LobeChat Database](./templates/lobechat-database/)
+### 🗨️ [LobeChat Database](./templates/lobechat-database/) **⚠️ DEPRECATED**
 
 Deploy LobeChat with database support, decoupled authentication, and S3 storage.
+
+> **⚠️ This template is deprecated.** LobeChat is no longer actively maintained. Please use **Lobe Hub** (the successor of LobeChat) for new deployments.
 
 **Stack:** LobeChat + PostgreSQL (pgvector)  
 **External:** Logto (auth) + MinIO (S3)  
