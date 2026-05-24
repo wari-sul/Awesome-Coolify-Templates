@@ -1,4 +1,8 @@
-# LobeChat Database (Decoupled Deployment)
+# LobeChat Database (Decoupled Deployment) **[DEPRECATED]**
+
+> ⚠️ **This template is deprecated.** LobeChat is no longer actively maintained. 
+> 
+> **Please use [Lobe Hub](https://hub.lobechat.com/)** (the successor of LobeChat) for new deployments. Lobe Hub offers improved features, better maintenance, and an active development community.
 
 <!-- ![LobeChat Banner](../../cover-pages/lobechat-banner.png) -->
 
